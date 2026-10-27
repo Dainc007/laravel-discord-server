@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create(config('discord-server.change_log.table', 'discord_changes'), function (Blueprint $table): void {
+            $table->id();
+            $table->nullableMorphs('actor');
+            $table->string('guild_id');
+            $table->string('action');
+            $table->string('target_type')->nullable();
+            $table->string('target_id')->nullable();
+            $table->string('target_name')->nullable();
+            $table->json('details')->nullable();
+            $table->boolean('succeeded');
+            $table->unsignedInteger('http_status')->nullable();
+            $table->unsignedInteger('discord_code')->nullable();
+            $table->text('error')->nullable();
+            $table->timestamps();
+
+            $table->index(['guild_id', 'created_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('discord-server.change_log.table', 'discord_changes'));
+    }
+};

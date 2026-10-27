@@ -1,0 +1,74 @@
+{
+    "name": "dainc007/laravel-discord-server",
+    "description": "Manage a Discord server from Laravel: config, a test fake, rate limits shared through the cache, and a log of every change with Discord audit reasons.",
+    "keywords": [
+        "laravel",
+        "discord",
+        "discord-api",
+        "discord-bot"
+    ],
+    "homepage": "https://github.com/dainc007/laravel-discord-server",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Heinze",
+            "email": "danielheinze96@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/dainc007/laravel-discord-server/issues",
+        "source": "https://github.com/dainc007/laravel-discord-server"
+    },
+    "require": {
+        "php": "^8.3",
+        "dainc007/discord-rest-client": "^0.1",
+        "guzzlehttp/guzzle": "^7.8",
+        "illuminate/cache": "^12.0 || ^13.0",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/database": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0",
+        "spatie/laravel-package-tools": "^1.92"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.20",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "pestphp/pest": "^3.0 || ^4.0 || ^5.0",
+        "pestphp/pest-plugin-laravel": "^3.0 || ^4.0 || ^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dainc007\\LaravelDiscordServer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dainc007\\LaravelDiscordServer\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": false
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Dainc007\\LaravelDiscordServer\\DiscordServerServiceProvider"
+            ],
+            "aliases": {
+                "DiscordServer": "Dainc007\\LaravelDiscordServer\\Facades\\DiscordServer"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
