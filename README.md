@@ -95,6 +95,15 @@ DiscordServer::actingAs($admin)->record(
 );
 ```
 
+To keep working with the log row the change wrote (show it, link to it, add to it), use `recordChange()`. It returns the change's result and that exact row, even when other changes are logged at the same moment:
+
+```php
+$recorded = DiscordServer::actingAs($admin)->recordChange('roles.reorder', $change, ChangeTarget::Guild);
+
+$recorded->result; // what the closure returned
+$recorded->log;    // the DiscordChange row, or null when the change log is off
+```
+
 ### Who made the change
 
 Any Eloquent model can be the actor. Discord's audit log shows its `name` attribute. To choose another name, implement `NamedDiscordActor`:
@@ -156,6 +165,19 @@ A missing token or server id throws `DiscordServerNotConfigured` before any requ
 
 ## The change log
 
+Every logged change fires `Dainc007\LaravelDiscordServer\Events\DiscordChangeRecorded`, also when Discord refused it (`$event->change->succeeded` tells which), so an app can notify someone or react. This event is the only way to reach the row of a refused change: `recordChange()` throws Discord's exception instead of returning. An error thrown by a listener is reported (`report()`) and does not stop the change or replace Discord's error:
+
+```php
+use Dainc007\LaravelDiscordServer\Events\DiscordChangeRecorded;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function (DiscordChangeRecorded $event): void {
+    if (! $event->change->succeeded) {
+        // tell the admins
+    }
+});
+```
+
 `Dainc007\LaravelDiscordServer\Models\DiscordChange`, one row per change:
 
 | Column | |
@@ -201,7 +223,7 @@ The fake makes no HTTP calls and the change log keeps working. When no server id
 
 ## Planned
 
-A queued version of the change methods, and events. A Filament plugin with pages for roles, channels, members and the change log comes as a separate package.
+A queued version of the change methods. A Filament plugin with pages for roles, channels, members and the change log comes as a separate package.
 
 ## Package tests
 

@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Dainc007\DiscordRestClient\Data\Channel editChannel(string $channelId, array<string, mixed> $attributes)
  * @method static \Dainc007\DiscordRestClient\Data\Channel deleteChannel(string $channelId)
  * @method static mixed record(string|\BackedEnum $action, \Closure $change, ?\Dainc007\LaravelDiscordServer\Enums\ChangeTarget $targetType = null, ?string $targetId = null, ?string $targetName = null, array<string, mixed> $details = [])
+ * @method static \Dainc007\LaravelDiscordServer\RecordedChange<mixed> recordChange(string|\BackedEnum $action, \Closure $change, ?\Dainc007\LaravelDiscordServer\Enums\ChangeTarget $targetType = null, ?string $targetId = null, ?string $targetName = null, array<string, mixed> $details = [])
  * @method static string auditReason()
  *
  * @see DiscordServerService

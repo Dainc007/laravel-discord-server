@@ -4,6 +4,11 @@ All notable changes to this package are listed here. Versions follow [Semantic V
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-27
+
+- `recordChange()`: like `record()`, and also returns the change log row it wrote, as `RecordedChange` (`result`, `log`).
+- `DiscordChangeRecorded` event after every logged change, refused ones included. An error in a listener is reported and never makes an applied change look failed, nor replaces Discord's own error.
+
 ## [0.1.0] - 2026-10-27
 
 First release. Config, a scoped client binding, rate limits shared through the Laravel cache, a facade with a test fake, a change log table with the acting model that model:prune keeps short, Discord audit reasons, methods for member, role and channel changes including syncRoles(), and a discord-server:check command that reports missing permissions and roles above the bot.

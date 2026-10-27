@@ -17,11 +17,13 @@ use Dainc007\DiscordRestClient\Exceptions\DiscordException;
 use Dainc007\LaravelDiscordServer\Contracts\NamedDiscordActor;
 use Dainc007\LaravelDiscordServer\Enums\ChangeAction;
 use Dainc007\LaravelDiscordServer\Enums\ChangeTarget;
+use Dainc007\LaravelDiscordServer\Events\DiscordChangeRecorded;
 use Dainc007\LaravelDiscordServer\Exceptions\DiscordServerNotConfigured;
 use Dainc007\LaravelDiscordServer\Models\DiscordChange;
 use DateTimeInterface;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
+use Throwable;
 
 /**
  * Makes changes on a Discord server. Every write goes through record(): it
@@ -305,6 +307,27 @@ final readonly class DiscordServer
         ?string $targetName = null,
         array $details = [],
     ): mixed {
+        return $this->recordChange($action, $change, $targetType, $targetId, $targetName, $details)->result;
+    }
+
+    /**
+     * record(), also handing back the change log row it wrote, for an app that
+     * keeps working with that row (shows it, links to it, adds to it).
+     *
+     * @template TResult
+     *
+     * @param  Closure(ClientContract $discord, string $guildId, string $auditReason): TResult  $change
+     * @param  array<string, mixed>  $details
+     * @return RecordedChange<TResult>
+     */
+    public function recordChange(
+        string|BackedEnum $action,
+        Closure $change,
+        ?ChangeTarget $targetType = null,
+        ?string $targetId = null,
+        ?string $targetName = null,
+        array $details = [],
+    ): RecordedChange {
         $guildId = $this->guildId();
         $client = $this->client();
         $reason = trim((string) $this->reason);
@@ -341,9 +364,9 @@ final readonly class DiscordServer
             $entry['target_id'] = $result->id;
         }
 
-        $this->log($entry + ['details' => $details === [] ? null : $details, 'succeeded' => true]);
+        $log = $this->log($entry + ['details' => $details === [] ? null : $details, 'succeeded' => true]);
 
-        return $result;
+        return new RecordedChange($result, $log);
     }
 
     /**
@@ -386,14 +409,25 @@ final readonly class DiscordServer
     /**
      * @param  array<string, mixed>  $attributes
      */
-    private function log(array $attributes): void
+    private function log(array $attributes): ?DiscordChange
     {
         if (! config('discord-server.change_log.enabled', true)) {
-            return;
+            return null;
         }
 
         $change = new DiscordChange($attributes);
         $change->actor()->associate($this->actor);
         $change->save();
+
+        // Discord has already answered by now. A failing listener (a mail that
+        // cannot be sent) must not make an applied change look failed, nor hide
+        // Discord's own error, so its error is reported and the change goes on.
+        try {
+            event(new DiscordChangeRecorded($change));
+        } catch (Throwable $listenerError) {
+            report($listenerError);
+        }
+
+        return $change;
     }
 }
